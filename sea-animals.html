@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Sea Animal Shadows — Matching Game | Learn with Pugu</title>
+<meta name="description" content="Drag each sea animal onto its matching shadow — whale, turtle, crab and more. A fun shadow-matching game on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/sea-animals.html">
+
+<!-- Icons & PWA -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Sea Animal Shadows — Matching Game | Learn with Pugu">
+<meta property="og:description" content="Drag each sea animal onto its matching shadow — whale, turtle, crab and more. A fun shadow-matching game on Learn with Pugu.">
+<meta property="og:url" content="https://learnwithpugu.com/sea-animals.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sea Animal Shadows — Matching Game | Learn with Pugu">
+<meta name="twitter:description" content="Drag each sea animal onto its matching shadow — whale, turtle, crab and more. A fun shadow-matching game on Learn with Pugu.">
+<meta name="twitter:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{ --sky1:#BEE7FF; --sky2:#D6F7FF; }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    display:flex; flex-direction:column; align-items:center;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  h1{ margin:12px 0 2px; font-size:clamp(22px,5vw,44px); font-weight:800; color:#fff;
+    letter-spacing:1px; text-shadow:0 4px 0 #2E92E8, 0 8px 14px rgba(0,0,0,.18); }
+  .menu-btn{ position:fixed; top:14px; left:14px; z-index:1800; text-decoration:none;
+    font-size:26px; background:#fff; width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 0 rgba(0,0,0,.15); }
+  .menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.15); }
+
+  .stage{ flex:1; width:100%; max-width:1200px; display:flex; flex-direction:column;
+    gap:8px; padding:4px 12px 10px; min-height:0; }
+
+  /* TOP: shadows (drop targets) */
+  .shadows{ display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(4px,1.2vw,16px);
+    flex:0 0 auto; justify-items:center; }
+  .shadow{ position:relative; width:100%; max-width:155px;
+    display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .15s; }
+  .shadowbox{ position:relative; width:100%; aspect-ratio:1; border-radius:20px;
+    background:rgba(255,255,255,.4); box-shadow:inset 0 3px 8px rgba(0,0,0,.06);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .shadowbox .silhouette{ position:absolute; inset:10%; display:flex;
+    align-items:center; justify-content:center; }
+  .shadowbox .silhouette img{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  /* emoji fallback: tint it dark so it reads as a shadow */
+  .shadowbox .silhouette span{ font-size:clamp(46px,10vw,104px); line-height:1;
+    filter:brightness(0) opacity(.32); }
+  /* the real colored animal revealed on match */
+  .shadowbox .reveal{ position:absolute; inset:8%; display:none;
+    align-items:center; justify-content:center; z-index:2;
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,.22)); }
+  .shadowbox .reveal img{ width:100%; height:100%; object-fit:contain; }
+  .shadowbox .reveal span{ font-size:clamp(46px,10vw,104px); line-height:1; }
+  .shadow.done .reveal{ display:flex; animation:pop .35s ease; }
+  .shadow.done .silhouette{ display:none; }
+  .shadow.hot .shadowbox{ transform:scale(1.06); box-shadow:inset 0 0 0 6px #4ECB5B; }
+  .shadow.hot{ transform:scale(1.04); }
+
+  /* BOTTOM: colored animals to drag */
+  .tray{ flex:1 1 auto; min-height:0; overflow:hidden; padding:6px;
+    display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(4px,1vw,14px);
+    align-content:center; justify-items:center; }
+  .animal{ width:100%; max-width:135px; aspect-ratio:1;
+    display:flex; align-items:center; justify-content:center;
+    cursor:grab; touch-action:none; transition:transform .12s ease;
+    filter:drop-shadow(0 6px 6px rgba(0,0,0,.22)); }
+  .animal .emo{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .animal .emo img{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  .animal .emo span{ font-size:clamp(40px,9vw,92px); line-height:1; }
+  .animal:active{ cursor:grabbing; }
+  .animal.lifted{ position:fixed; z-index:999; pointer-events:none; transition:none;
+    filter:drop-shadow(0 14px 14px rgba(0,0,0,.3)); }
+  .animal.placed{ visibility:hidden; }
+
+  .win{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; background:rgba(255,255,255,.85);
+    backdrop-filter:blur(4px); z-index:2000; }
+  .win.show{ display:flex; animation:pop .4s ease; }
+  .win .big{ font-size:clamp(50px,14vw,110px); }
+  .win h2{ font-size:clamp(30px,7vw,60px); color:#2E92E8; font-weight:800; }
+  .nextnote{ font-size:clamp(15px,3vw,22px); font-weight:800; color:#888; }
+  .again{ font-family:inherit; font-size:26px; font-weight:800; color:#fff;
+    background:#4ECB5B; border:none; border-radius:40px; padding:14px 44px;
+    box-shadow:0 6px 0 #2f9e3a; cursor:pointer; }
+  .again:active{ transform:translateY(4px); box-shadow:0 2px 0 #2f9e3a; }
+  @keyframes pop{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes wob{ 0%,100%{transform:rotate(0)} 25%{transform:rotate(-7deg)} 75%{transform:rotate(7deg)} }
+  .cheer{ animation:wob .5s ease !important; }
+  .confetti{ position:fixed; width:12px; height:12px; z-index:1500; border-radius:2px; pointer-events:none; }
+</style>
+</head>
+<body>
+  <h1>Match The Shadow</h1>
+  <a class="menu-btn" href="index.html">🏠</a>
+  <div class="stage">
+    <div class="shadows" id="shadows"></div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <div class="win" id="win">
+    <div class="big">🌊🎉</div>
+    <h2>You Did It!</h2>
+    <div class="nextnote">Next game starting…</div>
+    <button class="again" onclick="start()">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+// safety net so a missing common.js can't crash the game
+if (typeof playCorrect !== 'function') { window.playCorrect = function(){}; }
+if (typeof playWin     !== 'function') { window.playWin     = function(){}; }
+if (typeof sayUhOh     !== 'function') { window.sayUhOh     = function(){}; }
+if (typeof speak       !== 'function') { window.speak       = function(){}; }
+
+// id, image base (uses images/<base>-02.png and images/<base>-02-shadow.png),
+// emoji fallback, spoken name. The -02 suffix avoids clashing with other games' art.
+const ANIMALS = [
+  { id:"whale",     base:"whale",     emoji:"\u{1F40B}", name:"whale" },
+  { id:"turtle",    base:"turtle",    emoji:"\u{1F422}", name:"turtle" },
+  { id:"crab",      base:"crab",      emoji:"\u{1F980}", name:"crab" },
+  { id:"seahorse",  base:"seahorse",  emoji:"\u{1F40E}", name:"seahorse" },
+  { id:"jellyfish", base:"jellyfish", emoji:"\u{1FABC}", name:"jellyfish" },
+  { id:"starfish",  base:"starfish",  emoji:"\u{2B50}",  name:"starfish" },
+  { id:"fish",      base:"fish",      emoji:"\u{1F41F}", name:"fish" },
+  { id:"octopus",   base:"octopus",   emoji:"\u{1F419}", name:"octopus" },
+  { id:"dolphin",   base:"dolphin",   emoji:"\u{1F42C}", name:"dolphin" },
+  { id:"seal",      base:"seal",      emoji:"\u{1F9AD}", name:"seal" },
+];
+
+// colored animal image, emoji fallback if png missing
+function animalImg(base, emoji){
+  return `<img src="images/${base}-02.png" alt="${base}"
+    onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${emoji}'}))">`;
+}
+// shadow/silhouette image, faded+darkened emoji fallback
+function shadowImg(base, emoji){
+  return `<img src="images/${base}-02-shadow.png" alt="${base} shadow"
+    onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${emoji}'}))">`;
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+const shadows = document.getElementById('shadows');
+const tray    = document.getElementById('tray');
+const win      = document.getElementById('win');
+let matched = 0;
+let _nextTimer = null;   // pending auto-advance timer (so Play Again can cancel it)
+
+function start(){
+  if(_nextTimer){ clearTimeout(_nextTimer); _nextTimer=null; }
+  win.classList.remove('show');
+  shadows.innerHTML=''; tray.innerHTML=''; matched=0;
+
+  // TOP: shadows (shuffled)
+  shuffle([...ANIMALS]).forEach(a=>{
+    const s=document.createElement('div');
+    s.className='shadow'; s.dataset.id=a.id;
+    s.innerHTML =
+      `<div class="shadowbox">
+         <div class="silhouette">${shadowImg(a.base, a.emoji)}</div>
+         <div class="reveal">${animalImg(a.base, a.emoji)}</div>
+       </div>`;
+    shadows.appendChild(s);
+  });
+
+  // BOTTOM: colored animals to drag (separately shuffled)
+  shuffle([...ANIMALS]).forEach(a=>{
+    const d=document.createElement('div');
+    d.className='animal'; d.dataset.id=a.id; d.dataset.name=a.name;
+    d.innerHTML=`<div class="emo">${animalImg(a.base, a.emoji)}</div>`;
+    attachDrag(d);
+    tray.appendChild(d);
+  });
+}
+
+let active=null, offX=0, offY=0;
+
+function attachDrag(el){
+  el.addEventListener('pointerdown', e=>{
+    if(el.classList.contains('placed')) return;
+    active=el;
+    const r=el.getBoundingClientRect();
+    offX=e.clientX-r.left; offY=e.clientY-r.top;
+    el.classList.add('lifted');
+    el.style.width=r.width+'px'; el.style.height=r.height+'px';
+    move(e.clientX,e.clientY);
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', e=>{ if(active===el) move(e.clientX,e.clientY); });
+  el.addEventListener('pointerup', e=>{ if(active===el) drop(e.clientX,e.clientY); });
+}
+
+function move(x,y){
+  active.style.left=(x-offX)+'px';
+  active.style.top=(y-offY)+'px';
+  highlight(x,y);
+}
+
+function shadowAt(x,y){
+  for(const s of shadows.querySelectorAll('.shadow')){
+    const r=s.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom) return s;
+  }
+  return null;
+}
+
+function highlight(x,y){
+  shadows.querySelectorAll('.shadow').forEach(s=>s.classList.remove('hot'));
+  const s=shadowAt(x,y);
+  if(s && !s.classList.contains('done') && s.dataset.id===active.dataset.id) s.classList.add('hot');
+}
+
+function drop(x,y){
+  const el=active; active=null;
+  shadows.querySelectorAll('.shadow').forEach(s=>s.classList.remove('hot'));
+  const s=shadowAt(x,y);
+  el.classList.remove('lifted');
+  el.style.position=''; el.style.left=''; el.style.top='';
+  el.style.width=''; el.style.height=''; el.style.zIndex='';
+  if(s && !s.classList.contains('done') && s.dataset.id===el.dataset.id){
+    s.classList.add('done');
+    s.classList.add('cheer');
+    setTimeout(()=>s.classList.remove('cheer'),500);
+    el.classList.add('placed');
+    burst(s);
+    playCorrect();
+    speak(el.dataset.name);
+    matched++;
+    if(matched===ANIMALS.length){
+      setTimeout(()=>{
+        playWin();
+        setTimeout(playWin, 400);   // retry once if audio was still unlocking
+        win.classList.add('show');
+        const url = (typeof nextGameUrl==='function') ? nextGameUrl() : 'index.html';
+        _nextTimer = setTimeout(()=>{ location.href = url; }, 4000);
+      }, 600);
+    }
+  } else if(s){
+    sayUhOh();
+  }
+}
+
+function burst(node){
+  const r=node.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const cols=['#FFD23F','#FF6FB5','#4ECB5B','#3FA9FF','#FF8C24','#9B5DE5'];
+  for(let i=0;i<16;i++){
+    const c=document.createElement('div');
+    c.className='confetti'; c.style.background=cols[i%cols.length];
+    c.style.left=cx+'px'; c.style.top=cy+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2, dist=60+Math.random()*80;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    c.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+60}px) rotate(${Math.random()*360}deg) scale(.3)`,opacity:0}
+    ],{duration:700,easing:'ease-out'}).onfinish=()=>c.remove();
+  }
+}
+
+start();
+</script>
+</body>
+</html>
