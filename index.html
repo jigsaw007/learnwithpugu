@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Learn with Pugu — Fun Learning Games for Kids</title>
+<meta name="description" content="Learn with Pugu is a bright, playful set of matching games for little kids — match popsicles, numbers, fruit, shapes and animals with fun sounds.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/">
+
+<!-- Icons & PWA -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Learn with Pugu — Fun Learning Games for Kids">
+<meta property="og:description" content="Learn with Pugu is a bright, playful set of matching games for little kids — match popsicles, numbers, fruit, shapes and animals with fun sounds.">
+<meta property="og:url" content="https://learnwithpugu.com/">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Learn with Pugu — Fun Learning Games for Kids">
+<meta name="twitter:description" content="Learn with Pugu is a bright, playful set of matching games for little kids — match popsicles, numbers, fruit, shapes and animals with fun sounds.">
+<meta name="twitter:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,#FFE7A8,#FFB4DC 45%,#A8E6FF);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    user-select:none; overflow-x:hidden; padding-bottom:30px;
+  }
+  .blob{ position:fixed; border-radius:50%; filter:blur(2px); opacity:.4; z-index:0;
+    animation:float 6s ease-in-out infinite; }
+  @keyframes float{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-22px)} }
+
+  h1{ position:relative; z-index:1; margin:34px 0 6px; text-align:center;
+    font-size:clamp(34px,8.5vw,76px); font-weight:800; color:#fff; line-height:1.05;
+    text-shadow:0 5px 0 #FF6FB5, 0 10px 18px rgba(0,0,0,.2); }
+  .sub{ position:relative; z-index:1; font-size:clamp(18px,4vw,26px); color:#fff;
+    text-shadow:0 2px 4px rgba(0,0,0,.2); margin-bottom:30px; }
+
+  .grid{ position:relative; z-index:1; width:100%; max-width:1000px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:24px; padding:0 22px; }
+
+  .card{ text-decoration:none; border-radius:34px; padding:30px 20px 26px;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    color:#fff; font-weight:800; font-size:clamp(22px,4vw,30px); text-align:center;
+    box-shadow:0 10px 0 rgba(0,0,0,.16), 0 16px 26px rgba(0,0,0,.22);
+    transition:transform .15s, box-shadow .15s; position:relative; overflow:hidden;
+    animation:rise .5s ease both; }
+  .card:active{ transform:translateY(8px); box-shadow:0 2px 0 rgba(0,0,0,.16),0 8px 16px rgba(0,0,0,.22); }
+  .card .art{ width:120px; height:120px; display:flex; align-items:center; justify-content:center; }
+  .card .art svg{ width:100%; height:100%; }
+  .card .emoji{ font-size:84px; line-height:1; }
+
+  .pink{ background:linear-gradient(160deg,#FF8FC7,#FF5BA3); }
+  .green{ background:linear-gradient(160deg,#7FE08C,#3CB54A); }
+  .blue{ background:linear-gradient(160deg,#6FC5FF,#2E92E8); }
+  .orange{ background:linear-gradient(160deg,#FFC15E,#FF8C24); }
+  .purple{ background:linear-gradient(160deg,#C18CFF,#9B5DE5); }
+
+  .soon{ filter:grayscale(.3); }
+  .badge{ position:absolute; top:14px; right:-34px; background:#2B2B2B; color:#fff;
+    font-size:13px; padding:5px 40px; transform:rotate(38deg); letter-spacing:1px; }
+
+  @keyframes rise{ from{opacity:0; transform:translateY(30px)} to{opacity:1; transform:translateY(0)} }
+  .card:nth-child(1){animation-delay:.05s}
+  .card:nth-child(2){animation-delay:.15s}
+  .card:nth-child(3){animation-delay:.25s}
+  .card:nth-child(4){animation-delay:.35s}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Learn with Pugu",
+  "url": "https://learnwithpugu.com/",
+  "description": "Bright, playful matching games for little kids — colors, numbers, fruit, shapes and animals.",
+  "inLanguage": "en"
+}
+</script>
+</head>
+<body>
+  <div class="blob" style="width:120px;height:120px;background:#FFD23F;top:12%;left:6%"></div>
+  <div class="blob" style="width:90px;height:90px;background:#9B5DE5;top:60%;left:10%;animation-delay:1.5s"></div>
+  <div class="blob" style="width:140px;height:140px;background:#4ECB5B;top:20%;right:5%;animation-delay:.8s"></div>
+  <div class="blob" style="width:80px;height:80px;background:#FF4D4D;top:70%;right:9%;animation-delay:2.2s"></div>
+
+  <h1>Learn with Pugu</h1>
+  <div class="sub">Pick a game 🎈</div>
+
+  <div class="grid">
+    <a class="card orange" href="name-spell.html">
+      <div class="art"><div class="emoji">👧</div></div>
+      Spell My Name
+    </a>
+
+    <a class="card blue" href="family-match.html">
+      <div class="art"><div class="emoji">👨‍👩‍👧‍👦</div></div>
+      My Family
+    </a>
+
+    <a class="card pink" href="match-the-popsicle.html">
+      <div class="art">
+        <svg viewBox="0 0 64 130" xmlns="http://www.w3.org/2000/svg">
+          <rect x="27" y="96" width="10" height="32" rx="5" fill="#FFE0B8" stroke="#fff" stroke-width="2"/>
+          <path d="M32 4 C12 4 6 22 6 50 L6 86 C6 96 14 102 32 102 C50 102 58 96 58 86 L58 50 C58 22 52 4 32 4 Z"
+            fill="#FFD23F" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+          <ellipse cx="22" cy="34" rx="8" ry="14" fill="#fff" opacity="0.45"/>
+        </svg>
+      </div>
+      Match The Popsicle
+    </a>
+
+    <a class="card green" href="number-caterpillar.html">
+      <div class="art">
+        <svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="92" cy="78" r="26" fill="#FFD23F"/>
+          <circle cx="64" cy="74" r="28" fill="#FF8C24"/>
+          <circle cx="38" cy="70" r="30" fill="#7ED957"/>
+          <circle cx="28" cy="52" r="4" fill="#fff"/><circle cx="48" cy="52" r="4" fill="#fff"/>
+          <circle cx="28" cy="53" r="2" fill="#2B2B2B"/><circle cx="48" cy="53" r="2" fill="#2B2B2B"/>
+          <path d="M30 64 Q38 72 46 64" stroke="#2B2B2B" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Number Caterpillar
+    </a>
+
+    <a class="card orange" href="fruit-match.html">
+      <div class="art"><div class="emoji">🍓</div></div>
+      Match The Fruit
+    </a>
+
+    <a class="card blue" href="shape-match.html">
+      <div class="art">
+        <svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="42" cy="46" r="24" fill="#FF4D4D"/>
+          <rect x="68" y="24" width="44" height="44" rx="8" fill="#FFD23F"/>
+          <polygon points="65,72 92,118 38,118" fill="#fff"/>
+        </svg>
+      </div>
+      Match The Shape
+    </a>
+
+    <a class="card green" href="animal-match.html">
+      <div class="art"><div class="emoji">🦁</div></div>
+      Match The Animal
+    </a>
+
+    <a class="card purple" href="find-color.html">
+      <div class="art"><div class="emoji">🔴</div></div>
+      Find The Color
+    </a>
+    <a class="card pink" href="trace-line.html">
+  <div class="art"><div class="emoji">✏️</div></div>
+  Trace The Line
+</a>
+<a class="card blue" href="where-they-live.html">
+  <div class="art"><div class="emoji">🏡</div></div>
+  Where Do They Live?
+</a>
+  </div>
+<script src="common.js"></script>
+</body>
+</html>

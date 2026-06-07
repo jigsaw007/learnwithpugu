@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>My Family — Family Game | Learn with Pugu</title>
+<meta name="description" content="Put each family member in their place in this sweet drag-and-drop family game on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/family-match.html">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="My Family — Learn with Pugu">
+<meta property="og:url" content="https://learnwithpugu.com/family-match.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{ --sky1:#EAF7FF; --sky2:#FFF3D6; }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    display:flex; flex-direction:column; align-items:center;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  h1{ margin:8px 0 2px; font-size:clamp(22px,5vw,42px); font-weight:800; color:#fff;
+    letter-spacing:1px; text-shadow:0 4px 0 #FF8C24, 0 8px 14px rgba(0,0,0,.18); }
+  .menu-btn{ position:fixed; top:14px; left:14px; z-index:1800; text-decoration:none;
+    font-size:26px; background:#fff; width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 0 rgba(0,0,0,.15); }
+  .menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.15); }
+
+  .stage{ flex:1; width:100%; max-width:1100px; display:flex; flex-direction:column;
+    gap:4px; padding:2px 10px 8px; min-height:0; align-items:center; }
+
+  /* board shows the outline picture; reveals show slices of the colored picture */
+  .scene{ position:relative; width:100%; max-width:720px; aspect-ratio:1387/1134;
+    flex:0 0 auto; border-radius:16px; overflow:hidden;
+    background:url('family/familyoutlined.png') center/100% 100% no-repeat; }
+  .spot{ position:absolute; }
+  .spot.hot{ outline:4px dashed rgba(0,0,0,.3); border-radius:10px; }
+  /* a reveal is the WHOLE colored picture, but clipped to this person's box.
+     We size the background to the full scene and offset it so the slice lines up. */
+  .reveal{ position:absolute; overflow:hidden; opacity:0; transition:opacity .35s; pointer-events:none; }
+  .reveal.show{ opacity:1; }
+  .reveal .full{ position:absolute; background:url('family/familyoriginal.png') center/100% 100% no-repeat; }
+
+  .tray{ flex:1 1 auto; min-height:0; overflow:hidden;
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+    gap:clamp(4px,1.2vw,14px); padding:4px; }
+  .person{ height:clamp(64px,12vh,128px); width:auto; cursor:grab; touch-action:none;
+    transition:transform .12s ease; filter:drop-shadow(0 5px 5px rgba(0,0,0,.2)); }
+  .person img{ height:100%; width:auto; pointer-events:none; display:block; }
+  .person:active{ cursor:grabbing; }
+  .person.lifted{ position:fixed; z-index:999; pointer-events:none; transition:none;
+    filter:drop-shadow(0 14px 14px rgba(0,0,0,.3)); }
+  .person.placed{ display:none; }
+
+  .win{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; background:rgba(255,255,255,.92);
+    backdrop-filter:blur(4px); z-index:2000; }
+  .win.show{ display:flex; animation:pop .4s ease; }
+  .win .big{ font-size:clamp(50px,14vw,110px); }
+  .win h2{ font-size:clamp(26px,6vw,52px); color:#FF8C24; font-weight:800; text-align:center; }
+  .nextnote{ font-size:clamp(15px,3vw,22px); font-weight:800; color:#888; }
+  .again{ font-family:inherit; font-size:26px; font-weight:800; color:#fff;
+    background:#4ECB5B; border:none; border-radius:40px; padding:14px 44px;
+    box-shadow:0 6px 0 #2f9e3a; cursor:pointer; }
+  .again:active{ transform:translateY(4px); box-shadow:0 2px 0 #2f9e3a; }
+  @keyframes pop{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+  .confetti{ position:fixed; width:12px; height:12px; z-index:1500; border-radius:2px; pointer-events:none; }
+</style>
+</head>
+<body>
+  <h1>My Family</h1>
+  <a class="menu-btn" href="index.html">🏠</a>
+  <div class="stage">
+    <div class="scene" id="scene"></div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <div class="win" id="win">
+    <div class="big">👨‍👩‍👧‍👦🎉</div>
+    <h2>I Love My Family!</h2>
+    <div class="nextnote">Next game starting…</div>
+    <button class="again" onclick="start()">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+// box = [left, top, right, bottom] in 0..1 over the picture.
+const FAMILY = [
+  ["aaja","Aaja",        [0.0288,0.1058,0.2307,0.7937]],
+  ["aaji","Aaji",        [0.2091,0.1587,0.3893,0.7937]],
+  ["pugu","Pugu",        [0.3172,0.3086,0.4326,0.582 ]],
+  ["aama","Aama",        [0.3533,0.1499,0.5191,0.7937]],
+  ["didi","Didi",        [0.4614,0.3704,0.6056,0.7937]],
+  ["papa","Papa",        [0.4758,0.0794,0.6633,0.6702]],
+  ["thulopapa","Thulopapa",[0.5984,0.1146,0.7787,0.7937]],
+  ["thulomamu","Thulomamu",[0.7426,0.1764,1.0,   0.7937]],
+];
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+function pct(v){ return (v*100)+'%'; }
+
+const scene = document.getElementById('scene');
+const tray = document.getElementById('tray');
+const win = document.getElementById('win');
+let matched = 0;
+
+function start(){
+  win.classList.remove('show');
+  scene.innerHTML=''; tray.innerHTML=''; matched=0;
+
+  FAMILY.forEach(([id,label,box])=>{
+    const [l,t,r,b]=box;
+    const w=r-l, h=b-t;
+    // drop hotspot
+    const spot=document.createElement('div');
+    spot.className='spot'; spot.dataset.id=id;
+    spot.style.left=pct(l); spot.style.top=pct(t);
+    spot.style.width=pct(w); spot.style.height=pct(h);
+    scene.appendChild(spot);
+
+    // reveal window (clips the full colored picture to this person's box)
+    const rev=document.createElement('div');
+    rev.className='reveal'; rev.dataset.rev=id;
+    rev.style.left=pct(l); rev.style.top=pct(t);
+    rev.style.width=pct(w); rev.style.height=pct(h);
+    const full=document.createElement('div');
+    full.className='full';
+    // size the inner full image to the WHOLE scene, offset so the correct slice shows
+    full.style.width=pct(1/w*1);          // = (100/ (w*100)) * 100%  -> scene width / box width
+    full.style.height=pct(1/h*1);
+    full.style.left=pct(-l/w);
+    full.style.top=pct(-t/h);
+    rev.appendChild(full);
+    scene.appendChild(rev);
+  });
+
+  // draggable colored tokens (cropped people), shuffled
+  shuffle([...FAMILY]).forEach(([id,label])=>{
+    const p=document.createElement('div');
+    p.className='person'; p.dataset.id=id; p.dataset.label=label;
+    p.innerHTML=`<img src="family/${id}-token.png" alt="${label}">`;
+    attachDrag(p);
+    tray.appendChild(p);
+  });
+}
+
+let active=null, offX=0, offY=0;
+
+function attachDrag(el){
+  el.addEventListener('pointerdown', e=>{
+    if(el.classList.contains('placed')) return;
+    active=el;
+    const r=el.getBoundingClientRect();
+    offX=e.clientX-r.left; offY=e.clientY-r.top;
+    el.classList.add('lifted');
+    el.style.width=r.width+'px'; el.style.height=r.height+'px';
+    move(e.clientX,e.clientY);
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', e=>{ if(active===el) move(e.clientX,e.clientY); });
+  el.addEventListener('pointerup', e=>{ if(active===el) drop(e.clientX,e.clientY); });
+}
+
+function move(x,y){
+  active.style.left=(x-offX)+'px';
+  active.style.top=(y-offY)+'px';
+  highlight(x,y);
+}
+
+function spotAt(x,y){
+  for(const s of scene.querySelectorAll('.spot')){
+    const r=s.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom) return s;
+  }
+  return null;
+}
+
+function highlight(x,y){
+  scene.querySelectorAll('.spot').forEach(s=>s.classList.remove('hot'));
+  const s=spotAt(x,y);
+  if(s && !s.classList.contains('done') && s.dataset.id===active.dataset.id) s.classList.add('hot');
+}
+
+function drop(x,y){
+  const el=active; active=null;
+  scene.querySelectorAll('.spot').forEach(s=>s.classList.remove('hot'));
+  const s=spotAt(x,y);
+  el.classList.remove('lifted');
+  el.style.position=''; el.style.left=''; el.style.top='';
+  el.style.width=''; el.style.height=''; el.style.zIndex='';
+  if(s && !s.classList.contains('done') && s.dataset.id===el.dataset.id){
+    s.classList.add('done');
+    const rev=scene.querySelector(`.reveal[data-rev="${s.dataset.id}"]`);
+    if(rev) rev.classList.add('show');
+    el.classList.add('placed');
+    burst(s);
+    playCorrect();
+    speak(el.dataset.label);
+    matched++;
+    if(matched===FAMILY.length) setTimeout(()=>{ playWin(); win.classList.add('show'); scheduleNextGame(); },800);
+  } else if(s){
+    sayUhOh();
+  }
+}
+
+function burst(node){
+  const r=node.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const cols=['#FFD23F','#FF6FB5','#4ECB5B','#3FA9FF','#FF8C24','#9B5DE5'];
+  for(let i=0;i<16;i++){
+    const c=document.createElement('div');
+    c.className='confetti'; c.style.background=cols[i%cols.length];
+    c.style.left=cx+'px'; c.style.top=cy+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2, dist=60+Math.random()*80;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    c.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+60}px) rotate(${Math.random()*360}deg) scale(.3)`,opacity:0}
+    ],{duration:700,easing:'ease-out'}).onfinish=()=>c.remove();
+  }
+}
+
+start();
+</script>
+</body>
+</html>

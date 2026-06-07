@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Find the Color — Color Game | Learn with Pugu</title>
+<meta name="description" content="Find the red, blue or green thing! A fun tapping color game for little kids on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/find-color.html">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Find the Color — Learn with Pugu">
+<meta property="og:description" content="Find the red, blue or green thing! A fun color game for kids.">
+<meta property="og:url" content="https://learnwithpugu.com/find-color.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{ --sky1:#E6F0FF; --sky2:#FFE9F4; }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    display:flex; flex-direction:column; align-items:center;
+    touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  }
+  .menu-btn{ position:fixed; top:14px; left:14px; z-index:1800; text-decoration:none;
+    font-size:26px; background:#fff; width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 0 rgba(0,0,0,.15); }
+  .menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.15); }
+
+  /* prompt */
+  .prompt{ margin:14px 0 4px; text-align:center; }
+  .prompt .lead{ font-size:clamp(20px,4vw,30px); font-weight:800; color:#fff;
+    text-shadow:0 2px 4px rgba(0,0,0,.18); }
+  .prompt .color{ font-size:clamp(34px,8vw,64px); font-weight:800; line-height:1;
+    color:var(--target,#fff);
+    text-shadow:0 3px 0 rgba(0,0,0,.18), 0 6px 12px rgba(0,0,0,.15);
+    -webkit-text-stroke:2px #fff; }
+  .counter{ display:inline-block; margin:6px 0 2px; font-size:clamp(16px,3.2vw,24px);
+    font-weight:800; color:#fff; background:rgba(0,0,0,.22); border-radius:30px;
+    padding:4px 18px; }
+  .counter.flash{ animation:cpop .3s ease; }
+  @keyframes cpop{ 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
+  .progress{ display:flex; gap:8px; margin:6px 0 2px; }
+  .dot{ width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,.6);
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.1); transition:transform .2s; }
+  .dot.on{ background:#4ECB5B; transform:scale(1.2); }
+
+  .grid{ flex:1; width:100%; max-width:1100px; min-height:0;
+    display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:1fr;
+    gap:clamp(6px,1.4vw,16px); padding:8px 14px 16px; place-items:center; }
+  .item{ position:relative; width:100%; max-width:150px; aspect-ratio:1;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform .12s ease;
+    filter:drop-shadow(0 5px 5px rgba(0,0,0,.18)); }
+  .item .emo{ font-size:clamp(40px,9vw,96px); line-height:1; }
+  .item:active{ transform:scale(.92); }
+  .item.found{ pointer-events:none; }
+  .item.found .emo{ filter:grayscale(.4) opacity(.45); }
+  .check{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    font-size:clamp(44px,10vw,100px); }
+  .item.found .check{ display:flex; animation:pop .35s ease; }
+  .item.wrong{ animation:shake .4s ease; }
+
+  @keyframes pop{ from{transform:scale(.3);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes shake{ 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+
+  .win{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; background:rgba(255,255,255,.85);
+    backdrop-filter:blur(4px); z-index:2000; }
+  .win.show{ display:flex; animation:pop .4s ease; }
+  .win .big{ font-size:clamp(50px,14vw,110px); }
+  .win h2{ font-size:clamp(30px,7vw,60px); color:#9B5DE5; font-weight:800; }
+    .nextnote{ font-size:clamp(15px,3vw,22px); font-weight:800; color:#888; }
+  .again{ font-family:inherit; font-size:26px; font-weight:800; color:#fff;
+    background:#4ECB5B; border:none; border-radius:40px; padding:14px 44px;
+    box-shadow:0 6px 0 #2f9e3a; cursor:pointer; }
+  .again:active{ transform:translateY(4px); box-shadow:0 2px 0 #2f9e3a; }
+  .confetti{ position:fixed; width:12px; height:12px; z-index:1500; border-radius:2px; pointer-events:none; }
+</style>
+</head>
+<body>
+  <a class="menu-btn" href="index.html">🏠</a>
+  <div class="prompt">
+    <div class="lead">Find all the</div>
+    <div class="color" id="colorWord">RED</div>
+    <div class="counter" id="counter">Find: 5</div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <div class="win" id="win">
+    <div class="big">⭐🎉⭐</div>
+    <h2>You Did It!</h2>
+    <div class="nextnote">Next game starting…</div>
+    <button class="again" onclick="start()">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+// each item: emoji + its color name
+const ITEMS = [
+  // RED
+  ["🍎","red"],["🚗","red"],["🍓","red"],["🌹","red"],["🍒","red"],["🐞","red"],
+  // YELLOW
+  ["🍌","yellow"],["⭐","yellow"],["🌻","yellow"],["🚕","yellow"],["🧀","yellow"],["🐥","yellow"],
+  // GREEN
+  ["🥝","green"],["🌳","green"],["🐢","green"],["🥦","green"],["🍀","green"],["🐸","green"],
+  // BLUE
+  ["🫐","blue"],["🚙","blue"],["🐳","blue"],["💙","blue"],["🦋","blue"],["🌀","blue"],
+  // ORANGE
+  ["🍊","orange"],["🎃","orange"],["🦊","orange"],["🥕","orange"],["🏀","orange"],
+  // PURPLE
+  ["🍇","purple"],["🍆","purple"],["🟣","purple"],["👾","purple"],["🔮","purple"],
+  // PINK
+  ["🌸","pink"],["🐷","pink"],["🎀","pink"],["💗","pink"],["🦩","pink"],
+  // BROWN
+  ["🐻","brown"],["🍪","brown"],["🥔","brown"],["🌰","brown"],["🐴","brown"],
+];
+
+const COLOR_HEX = {
+  red:"#FF4D4D", yellow:"#FFC400", green:"#3CB54A", blue:"#2E92E8",
+  orange:"#FF8C24", purple:"#9B5DE5", pink:"#FF5BA3", brown:"#A0673E"
+};
+
+const GRID = 12;     // items on the board
+const MAX_TARGET = 5; // most of the target color to include
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+function byColor(c){ return ITEMS.filter(it=>it[1]===c); }
+
+const grid = document.getElementById('grid');
+const colorWord = document.getElementById('colorWord');
+const counterEl = document.getElementById('counter');
+const progressEl = document.getElementById('progress');
+const win = document.getElementById('win');
+
+// fixed order of colors to play through, one round each
+const COLOR_SEQUENCE = ["red","green","blue","yellow","purple","orange"];
+
+let target='';
+let toFind=0;
+let found=0;
+let busy=false;
+let roundIndex=0;
+
+function start(){
+  win.classList.remove('show');
+  roundIndex=0;
+  buildRound();
+}
+
+function buildRound(){
+  found=0; busy=false;
+  target = COLOR_SEQUENCE[roundIndex];
+
+  // how many of the target to place: 4..MAX_TARGET (capped by what's available)
+  const available = byColor(target).length;
+  const maxN = Math.max(4, Math.min(MAX_TARGET, available));
+  toFind = 4 + Math.floor(Math.random()*(maxN-4+1));   // between 4 and maxN
+
+  // pick the target items + fill the rest with other colors
+  const targetItems = shuffle([...byColor(target)]).slice(0, toFind);
+  const others = shuffle(ITEMS.filter(it=>it[1]!==target)).slice(0, GRID - toFind);
+  const board = shuffle([...targetItems, ...others]);   // shuffled positions
+
+  // prompt
+  colorWord.textContent = target.toUpperCase();
+  colorWord.style.setProperty('--target', COLOR_HEX[target]);
+  speak('Find all the ' + target + ' ones');
+
+  // progress dots = number to find
+  progressEl.innerHTML='';
+  for(let i=0;i<toFind;i++){ const d=document.createElement('div'); d.className='dot'; progressEl.appendChild(d); }
+  updateCounter();
+
+  // render board
+  grid.innerHTML='';
+  board.forEach(([emoji,color])=>{
+    const el=document.createElement('div');
+    el.className='item';
+    el.dataset.color=color;
+    el.innerHTML=`<div class="emo">${emoji}</div><div class="check">✅</div>`;
+    el.addEventListener('pointerdown', ()=>tap(el));
+    grid.appendChild(el);
+  });
+}
+
+function markProgress(){
+  [...progressEl.children].forEach((d,i)=>d.classList.toggle('on', i<found));
+}
+
+function updateCounter(){
+  const left = toFind - found;
+  counterEl.textContent = left>0 ? ('Find: ' + left) : 'All found! 🎉';
+  counterEl.classList.remove('flash'); void counterEl.offsetWidth; counterEl.classList.add('flash');
+}
+
+function tap(el){
+  if(busy || el.classList.contains('found')) return;
+  if(el.dataset.color === target){
+    el.classList.add('found');
+    burst(el);
+    playCorrect();
+    found++;
+    markProgress();
+    updateCounter();
+    if(found>=toFind){
+      busy=true;
+      if(roundIndex < COLOR_SEQUENCE.length-1){
+        // next color round
+        setTimeout(()=>{ roundIndex++; buildRound(); }, 900);
+      }else{
+        // all colors done -> win + auto next game
+        setTimeout(()=>{ playWin(); win.classList.add('show'); scheduleNextGame(); }, 600);
+      }
+    }
+  }else{
+    el.classList.add('wrong');
+    sayUhOh();
+    setTimeout(()=>el.classList.remove('wrong'), 400);
+  }
+}
+
+function burst(node){
+  const r=node.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const cols=['#FFD23F','#FF6FB5','#4ECB5B','#3FA9FF','#FF8C24','#9B5DE5'];
+  for(let i=0;i<16;i++){
+    const c=document.createElement('div');
+    c.className='confetti'; c.style.background=cols[i%cols.length];
+    c.style.left=cx+'px'; c.style.top=cy+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2, dist=60+Math.random()*80;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    c.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+60}px) rotate(${Math.random()*360}deg) scale(.3)`,opacity:0}
+    ],{duration:700,easing:'ease-out'}).onfinish=()=>c.remove();
+  }
+}
+
+start();
+</script>
+</body>
+</html>

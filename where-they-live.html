@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Where They Live — Animal Homes Game | Learn with Pugu</title>
+<meta name="description" content="Drag each animal to its home — dog to kennel, frog to pond, bird to nest. A fun animal homes game on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/where-they-live.html">
+
+<!-- Icons & PWA -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Where They Live — Animal Homes Game | Learn with Pugu">
+<meta property="og:description" content="Drag each animal to its home — dog to kennel, frog to pond, bird to nest. A fun animal homes game on Learn with Pugu.">
+<meta property="og:url" content="https://learnwithpugu.com/where-they-live.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Where They Live — Animal Homes Game | Learn with Pugu">
+<meta name="twitter:description" content="Drag each animal to its home — dog to kennel, frog to pond, bird to nest. A fun animal homes game on Learn with Pugu.">
+<meta name="twitter:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{ --sky1:#D6ECFF; --sky2:#E8FFD6; }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    display:flex; flex-direction:column; align-items:center;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  h1{ margin:12px 0 2px; font-size:clamp(22px,5vw,44px); font-weight:800; color:#fff;
+    letter-spacing:1px; text-shadow:0 4px 0 #3FA9FF, 0 8px 14px rgba(0,0,0,.18); }
+  .menu-btn{ position:fixed; top:14px; left:14px; z-index:1800; text-decoration:none;
+    font-size:26px; background:#fff; width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 0 rgba(0,0,0,.15); }
+  .menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.15); }
+
+  .stage{ flex:1; width:100%; max-width:1200px; display:flex; flex-direction:column;
+    gap:8px; padding:4px 12px 10px; min-height:0; }
+
+  /* TOP: shelters / homes (drop targets) — BIGGER than the animals */
+  .homes{ display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(4px,1.2vw,16px);
+    flex:0 0 auto; justify-items:center; }
+  .home{ position:relative; width:100%; max-width:190px;
+    display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .15s; }
+  .homebox{ position:relative; width:100%; aspect-ratio:1; border-radius:22px;
+    background:rgba(255,255,255,.5); box-shadow:inset 0 3px 8px rgba(0,0,0,.08);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  /* the home picture fills the box */
+  .homebox .emo{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .homebox .emo img{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  .homebox .emo span{ font-size:clamp(50px,11vw,116px); line-height:1; }
+  .home .name{ font-size:clamp(11px,2vw,19px); font-weight:800; color:#444;
+    text-transform:capitalize; letter-spacing:.5px; }
+  .home.hot .homebox{ transform:scale(1.06); box-shadow:inset 0 0 0 6px #4ECB5B; }
+  .home.hot{ transform:scale(1.04); }
+  /* the matched animal sits INSIDE its home — smaller, tucked toward the bottom-center.
+     Position/size are tunable per-pair via --rx, --ry, --rw, --rh. */
+  .home .resident{ position:absolute; left:var(--rx,50%); top:var(--ry,60%);
+    width:var(--rw,52%); height:var(--rh,52%);
+    transform:translate(-50%,-50%); display:none;
+    align-items:center; justify-content:center; z-index:2;
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,.25)); }
+  .home .resident img{ width:100%; height:100%; object-fit:contain; }
+  .home .resident span{ font-size:clamp(26px,6vw,60px); line-height:1; }
+  .home.done .resident{ display:flex; animation:pop .35s ease; }
+
+  /* BOTTOM: animals to drag — smaller than the shelters */
+  .tray{ flex:1 1 auto; min-height:0; overflow:hidden; padding:6px;
+    display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(4px,1vw,14px);
+    align-content:center; justify-items:center; }
+  .animal{ width:100%; max-width:110px; aspect-ratio:1;
+    display:flex; align-items:center; justify-content:center;
+    cursor:grab; touch-action:none; transition:transform .12s ease;
+    filter:drop-shadow(0 6px 6px rgba(0,0,0,.22)); }
+  .animal .emo{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .animal .emo img{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  .animal .emo span{ font-size:clamp(34px,7.5vw,74px); line-height:1; }
+  .animal:active{ cursor:grabbing; }
+  .animal.lifted{ position:fixed; z-index:999; pointer-events:none; transition:none;
+    filter:drop-shadow(0 14px 14px rgba(0,0,0,.3)); }
+  .animal.placed{ visibility:hidden; }
+
+  .win{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; background:rgba(255,255,255,.85);
+    backdrop-filter:blur(4px); z-index:2000; }
+  .win.show{ display:flex; animation:pop .4s ease; }
+  .win .big{ font-size:clamp(50px,14vw,110px); }
+  .win h2{ font-size:clamp(30px,7vw,60px); color:#3FA9FF; font-weight:800; }
+  .nextnote{ font-size:clamp(15px,3vw,22px); font-weight:800; color:#888; }
+  .again{ font-family:inherit; font-size:26px; font-weight:800; color:#fff;
+    background:#4ECB5B; border:none; border-radius:40px; padding:14px 44px;
+    box-shadow:0 6px 0 #2f9e3a; cursor:pointer; }
+  .again:active{ transform:translateY(4px); box-shadow:0 2px 0 #2f9e3a; }
+  @keyframes pop{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes wob{ 0%,100%{transform:rotate(0)} 25%{transform:rotate(-7deg)} 75%{transform:rotate(7deg)} }
+  .cheer{ animation:wob .5s ease !important; }
+  .confetti{ position:fixed; width:12px; height:12px; z-index:1500; border-radius:2px; pointer-events:none; }
+</style>
+</head>
+<body>
+  <h1>Where Do They Live?</h1>
+  <a class="menu-btn" href="index.html">🏠</a>
+  <div class="stage">
+    <div class="homes" id="homes"></div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <div class="win" id="win">
+    <div class="big">🏡🎉</div>
+    <h2>Everyone Home!</h2>
+    <div class="nextnote">Next game starting…</div>
+    <button class="again" onclick="start()">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+// safety net so a missing common.js can't crash the game
+if (typeof playCorrect !== 'function') { window.playCorrect = function(){}; }
+if (typeof playWin     !== 'function') { window.playWin     = function(){}; }
+if (typeof sayUhOh     !== 'function') { window.sayUhOh     = function(){}; }
+if (typeof speak       !== 'function') { window.speak       = function(){}; }
+if (typeof scheduleNextGame !== 'function') {
+  window.scheduleNextGame = function(){ setTimeout(function(){ location.href='index.html'; },4000); };
+}
+
+// id = unique pair id. animal/home each have an image filename + emoji fallback.
+// `pos` = where the animal sits inside its home (CSS): {x,y,w,h} as % strings. Optional.
+// images live in  images/<file>.png
+const PAIRS = [
+  { id:"dog",   animal:"dog",   animalEmoji:"\u{1F436}", home:"kennel",   homeEmoji:"\u{1F3E0}", spoken:"The dog lives in a kennel",   pos:{x:"50%",y:"58%",w:"40%",h:"40%"} },
+  { id:"frog",  animal:"frog",  animalEmoji:"\u{1F438}", home:"pond",     homeEmoji:"\u{1F4A7}", spoken:"The frog lives in a pond",    pos:{x:"50%",y:"58%",w:"40%",h:"40%"} },
+  { id:"bird",  animal:"bird",  animalEmoji:"\u{1F426}", home:"nest",     homeEmoji:"\u{1FAA2}", spoken:"The bird lives in a nest",    pos:{x:"50%",y:"58%",w:"38%",h:"38%"} },
+  { id:"bee",   animal:"bee",   animalEmoji:"\u{1F41D}", home:"beehive",  homeEmoji:"\u{1F36F}", spoken:"The bee lives in a beehive",  pos:{x:"50%",y:"56%",w:"36%",h:"36%"} },
+  { id:"lion",  animal:"lion",  animalEmoji:"\u{1F981}", home:"den",      homeEmoji:"\u{1FAA8}", spoken:"The lion lives in a den",     pos:{x:"50%",y:"56%",w:"42%",h:"42%"} },
+  { id:"fish",  animal:"fish",  animalEmoji:"\u{1F41F}", home:"aquarium", homeEmoji:"\u{1F41A}", spoken:"The fish lives in an aquarium", pos:{x:"50%",y:"52%",w:"40%",h:"40%"} },
+];
+
+// image with emoji fallback if the png is missing
+function img(file, emoji, faded){
+  const fade = faded ? 'filter:grayscale(1) opacity(.3);' : '';
+  return `<img src="images/${file}.png" alt="${file}"
+    onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${emoji}',style:'${fade}'}))">`;
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+const homes = document.getElementById('homes');
+const tray  = document.getElementById('tray');
+const win   = document.getElementById('win');
+let matched = 0;
+let _nextTimer = null;   // pending auto-advance timer (so Play Again can cancel it)
+
+function start(){
+  if(_nextTimer){ clearTimeout(_nextTimer); _nextTimer=null; }  // stop auto-advance on restart
+  win.classList.remove('show');
+  homes.innerHTML=''; tray.innerHTML=''; matched=0;
+
+  // TOP: homes (shuffled so position doesn't give it away)
+  shuffle([...PAIRS]).forEach(p=>{
+    const h=document.createElement('div');
+    h.className='home'; h.dataset.id=p.id;
+    const pos = p.pos || {};
+    const style = `--rx:${pos.x||'50%'};--ry:${pos.y||'60%'};--rw:${pos.w||'52%'};--rh:${pos.h||'52%'}`;
+    h.innerHTML =
+      `<div class="homebox">
+         <div class="emo">${img(p.home, p.homeEmoji, false)}</div>
+         <div class="resident" style="${style}">${img(p.animal, p.animalEmoji, false)}</div>
+       </div>
+       <div class="name">${p.home}</div>`;
+    homes.appendChild(h);
+  });
+
+  // BOTTOM: animals to drag (separately shuffled)
+  shuffle([...PAIRS]).forEach(p=>{
+    const a=document.createElement('div');
+    a.className='animal'; a.dataset.id=p.id; a.dataset.spoken=p.spoken;
+    a.innerHTML=`<div class="emo">${img(p.animal, p.animalEmoji, false)}</div>`;
+    attachDrag(a);
+    tray.appendChild(a);
+  });
+}
+
+let active=null, offX=0, offY=0;
+
+function attachDrag(el){
+  el.addEventListener('pointerdown', e=>{
+    if(el.classList.contains('placed')) return;
+    active=el;
+    const r=el.getBoundingClientRect();
+    offX=e.clientX-r.left; offY=e.clientY-r.top;
+    el.classList.add('lifted');
+    el.style.width=r.width+'px'; el.style.height=r.height+'px';
+    move(e.clientX,e.clientY);
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', e=>{ if(active===el) move(e.clientX,e.clientY); });
+  el.addEventListener('pointerup', e=>{ if(active===el) drop(e.clientX,e.clientY); });
+}
+
+function move(x,y){
+  active.style.left=(x-offX)+'px';
+  active.style.top=(y-offY)+'px';
+  highlight(x,y);
+}
+
+function homeAt(x,y){
+  for(const h of homes.querySelectorAll('.home')){
+    const r=h.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom) return h;
+  }
+  return null;
+}
+
+function highlight(x,y){
+  homes.querySelectorAll('.home').forEach(h=>h.classList.remove('hot'));
+  const h=homeAt(x,y);
+  if(h && !h.classList.contains('done') && h.dataset.id===active.dataset.id) h.classList.add('hot');
+}
+
+function drop(x,y){
+  const el=active; active=null;
+  homes.querySelectorAll('.home').forEach(h=>h.classList.remove('hot'));
+  const h=homeAt(x,y);
+  el.classList.remove('lifted');
+  el.style.position=''; el.style.left=''; el.style.top='';
+  el.style.width=''; el.style.height=''; el.style.zIndex='';
+  if(h && !h.classList.contains('done') && h.dataset.id===el.dataset.id){
+    h.classList.add('done');
+    h.classList.add('cheer');
+    setTimeout(()=>h.classList.remove('cheer'),500);
+    el.classList.add('placed');
+    burst(h);
+    playCorrect();
+    speak(el.dataset.spoken);
+    matched++;
+    if(matched===PAIRS.length){
+      setTimeout(()=>{
+        playWin();
+        setTimeout(playWin, 400);   // retry once if audio was still unlocking
+        win.classList.add('show');
+        // auto-advance, but keep a handle so Play Again can cancel it
+        const url = (typeof nextGameUrl==='function') ? nextGameUrl() : 'index.html';
+        _nextTimer = setTimeout(()=>{ location.href = url; }, 4000);
+      }, 600);
+    }
+  } else if(h){
+    sayUhOh();
+  }
+}
+
+function burst(node){
+  const r=node.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const cols=['#FFD23F','#FF6FB5','#4ECB5B','#3FA9FF','#FF8C24','#9B5DE5'];
+  for(let i=0;i<16;i++){
+    const c=document.createElement('div');
+    c.className='confetti'; c.style.background=cols[i%cols.length];
+    c.style.left=cx+'px'; c.style.top=cy+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2, dist=60+Math.random()*80;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    c.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+60}px) rotate(${Math.random()*360}deg) scale(.3)`,opacity:0}
+    ],{duration:700,easing:'ease-out'}).onfinish=()=>c.remove();
+  }
+}
+
+start();
+</script>
+</body>
+</html>

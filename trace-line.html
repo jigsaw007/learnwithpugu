@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Trace the Line — Pencil Grip Game | Learn with Pugu</title>
+<meta name="description" content="Kids trace dotted lines from one fruit to its match. A fun pencil-grip and tracing game on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/trace-line.html">
+
+<!-- Icons & PWA -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Trace the Line — Pencil Grip Game | Learn with Pugu">
+<meta property="og:description" content="Kids trace dotted lines from one fruit to its match. A fun pencil-grip and tracing game on Learn with Pugu.">
+<meta property="og:url" content="https://learnwithpugu.com/trace-line.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Trace the Line — Pencil Grip Game | Learn with Pugu">
+<meta name="twitter:description" content="Kids trace dotted lines from one fruit to its match. A fun pencil-grip and tracing game on Learn with Pugu.">
+<meta name="twitter:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{ --sky1:#FFF3D6; --sky2:#D6F3FF; }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    display:flex; flex-direction:column; align-items:center;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  h1{ margin:12px 0 2px; font-size:clamp(24px,5.5vw,46px); font-weight:800; color:#fff;
+    letter-spacing:1px; text-shadow:0 4px 0 #FF8C24, 0 8px 14px rgba(0,0,0,.18); }
+  .menu-btn{ position:fixed; top:14px; left:14px; z-index:1800; text-decoration:none;
+    font-size:26px; background:#fff; width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 0 rgba(0,0,0,.15); }
+  .menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.15); }
+
+  .stage{ flex:1; width:100%; max-width:900px; display:flex; flex-direction:column;
+    padding:4px 8px 12px; min-height:0; }
+
+  /* the drawing surface: SVG paths + emoji endpoints share the same coordinate space */
+  .board{ position:relative; flex:1 1 auto; min-height:0; width:100%;
+    border-radius:24px; background:rgba(255,255,255,.5);
+    box-shadow:inset 0 4px 12px rgba(0,0,0,.06); overflow:hidden; }
+  svg.lines{ position:absolute; inset:0; width:100%; height:100%; }
+
+  /* dotted guide line */
+  .guide{ fill:none; stroke:rgba(0,0,0,.28); stroke-width:6; stroke-linecap:round;
+    stroke-dasharray:2 22; }
+  /* the colored trail that fills in as the child traces */
+  .trail{ fill:none; stroke-width:13; stroke-linecap:round; stroke-linejoin:round;
+    opacity:.9; transition:none; }
+
+  /* fruit endpoints */
+  .end{ position:absolute; width:clamp(64px,15vw,128px); height:clamp(64px,15vw,128px);
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(50px,12vw,104px); line-height:1; transform:translate(-50%,-50%);
+    filter:drop-shadow(0 5px 6px rgba(0,0,0,.22)); transition:transform .15s; }
+  .end.cheer{ animation:wob .5s ease; }
+  @keyframes wob{ 0%,100%{transform:translate(-50%,-50%) rotate(0)}
+    25%{transform:translate(-50%,-50%) rotate(-8deg)} 75%{transform:translate(-50%,-50%) rotate(8deg)} }
+  .row.done .end{ filter:drop-shadow(0 4px 5px rgba(0,0,0,.2)) saturate(1.1); }
+
+  .hint{ text-align:center; font-size:clamp(15px,3vw,22px); font-weight:800;
+    color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.18); margin:6px 0 2px; }
+
+  .win{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; background:rgba(255,255,255,.85);
+    backdrop-filter:blur(4px); z-index:2000; }
+  .win.show{ display:flex; animation:pop .4s ease; }
+  .win .big{ font-size:clamp(50px,14vw,110px); }
+  .win h2{ font-size:clamp(30px,7vw,60px); color:#FF8C24; font-weight:800; }
+  .nextnote{ font-size:clamp(15px,3vw,22px); font-weight:800; color:#888; }
+  .again{ font-family:inherit; font-size:26px; font-weight:800; color:#fff;
+    background:#4ECB5B; border:none; border-radius:40px; padding:14px 44px;
+    box-shadow:0 6px 0 #2f9e3a; cursor:pointer; }
+  .again:active{ transform:translateY(4px); box-shadow:0 2px 0 #2f9e3a; }
+  @keyframes pop{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+  .confetti{ position:fixed; width:12px; height:12px; z-index:1500; border-radius:2px; pointer-events:none; }
+</style>
+</head>
+<body>
+  <h1>Trace The Line</h1>
+  <a class="menu-btn" href="index.html">🏠</a>
+  <div class="stage">
+    <div class="board" id="board">
+      <svg class="lines" id="lines" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="hint">Trace from each fruit to its friend! ✏️</div>
+  </div>
+
+  <div class="win" id="win">
+    <div class="big">✏️🎉</div>
+    <h2>Great Tracing!</h2>
+    <div class="nextnote">Next game starting…</div>
+    <button class="again" onclick="start()">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+// Each row: emoji, spoken name, trail color. We use a curved arc like the worksheet.
+const PAIRS = [
+  ["🍎","apple","#FF4D4D"],
+  ["🍓","strawberry","#FF5BA3"],
+  ["🍍","pineapple","#FFC400"],
+  ["🍌","banana","#FF8C24"],
+  ["🍇","grapes","#9B5DE5"],
+];
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+const board   = document.getElementById('board');
+const linesSvg= document.getElementById('lines');
+const win     = document.getElementById('win');
+
+let W=0, H=0;            // board pixel size
+let rows=[];             // [{path,len,start,end,trailEl,traced(bool),progress(0..1)}]
+let done=0;
+let activeRow=null;      // row currently being traced
+
+function start(){
+  win.classList.remove('show');
+  done=0; activeRow=null;
+  layout();
+}
+
+function layout(){
+  const r=board.getBoundingClientRect();
+  W=r.width; H=r.height;
+  linesSvg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  linesSvg.innerHTML='';
+  // remove old endpoint nodes
+  [...board.querySelectorAll('.row')].forEach(n=>n.remove());
+
+  rows=[];
+  const items = shuffle([...PAIRS]);
+  const n = items.length;
+  const padY = H*0.10;
+  const gap  = (H - padY*2) / (n-1 || 1);
+  const leftX  = W*0.17;
+  const rightX = W*0.83;
+
+  items.forEach(([emoji,name,col],i)=>{
+    const y = padY + gap*i;
+    // gentle downward arc, like the worksheet's dotted lines
+    const midX = (leftX+rightX)/2;
+    const dip  = 26 + i*4;          // each line bows a little differently
+    const d = `M ${leftX} ${y} Q ${midX} ${y+dip} ${rightX} ${y}`;
+
+    // dotted guide
+    const guide=document.createElementNS('http://www.w3.org/2000/svg','path');
+    guide.setAttribute('d',d); guide.setAttribute('class','guide');
+    linesSvg.appendChild(guide);
+
+    // colored trail (revealed via stroke-dashoffset as child traces)
+    const trail=document.createElementNS('http://www.w3.org/2000/svg','path');
+    trail.setAttribute('d',d); trail.setAttribute('class','trail');
+    trail.setAttribute('stroke',col);
+    linesSvg.appendChild(trail);
+    const len=trail.getTotalLength();
+    trail.style.strokeDasharray=len;
+    trail.style.strokeDashoffset=len;   // hidden at start
+
+    // endpoints (DOM, positioned over the SVG)
+    const rowNode=document.createElement('div'); rowNode.className='row'; rowNode.dataset.i=i;
+    const startEl=document.createElement('div');
+    startEl.className='end start'; startEl.textContent=emoji;
+    startEl.style.left=leftX+'px'; startEl.style.top=y+'px'; startEl.style.setProperty('--c',col);
+    const endEl=document.createElement('div');
+    endEl.className='end goal'; endEl.textContent=emoji;
+    endEl.style.left=rightX+'px'; endEl.style.top=y+'px';
+    rowNode.appendChild(startEl); rowNode.appendChild(endEl);
+    board.appendChild(rowNode);
+
+    rows.push({ path:trail, guide, len, name, col, emoji,
+      start:{x:leftX,y}, end:{x:rightX,y},
+      node:rowNode, startEl, traced:false, progress:0 });
+  });
+}
+
+// find nearest point parameter on a path to (x,y) — sampled
+function nearestT(row, x, y){
+  const N=60; let bestT=0, bestD=Infinity;
+  for(let i=0;i<=N;i++){
+    const t=i/N;
+    const p=row.path.getPointAtLength(t*row.len);
+    const dx=p.x-x, dy=p.y-y, d=dx*dx+dy*dy;
+    if(d<bestD){ bestD=d; bestT=t; }
+  }
+  return { t:bestT, dist:Math.sqrt(bestD) };
+}
+
+function boardXY(e){
+  const r=board.getBoundingClientRect();
+  return { x:e.clientX-r.left, y:e.clientY-r.top };
+}
+
+board.addEventListener('pointerdown', e=>{
+  const {x,y}=boardXY(e);
+  // start tracing the row whose START fruit you press near (and isn't done)
+  let pick=null, pd=Infinity;
+  rows.forEach(row=>{
+    if(row.traced) return;
+    const dx=row.start.x-x, dy=row.start.y-y, d=Math.hypot(dx,dy);
+    if(d<pd){ pd=d; pick=row; }
+  });
+  const grab = Math.max(64, W*0.14);
+  if(pick && pd<grab){
+    activeRow=pick;
+    board.setPointerCapture(e.pointerId);
+    extend(x,y);
+  }
+});
+
+board.addEventListener('pointermove', e=>{
+  if(!activeRow) return;
+  const {x,y}=boardXY(e);
+  extend(x,y);
+});
+
+board.addEventListener('pointerup', e=>{
+  if(!activeRow) return;
+  // if they got close enough to the end, count it; otherwise keep partial progress
+  if(activeRow.progress>=0.92) complete(activeRow);
+  activeRow=null;
+});
+
+function extend(x,y){
+  const row=activeRow;
+  const {t,dist}=nearestT(row,x,y);
+  // must stay reasonably near the line to keep drawing
+  const tol = Math.max(40, W*0.085);
+  if(dist>tol) return;
+  // only allow moving forward (no scribbling backwards past progress - small slack)
+  if(t > row.progress - 0.06){
+    row.progress = Math.max(row.progress, t);
+    row.path.style.strokeDashoffset = row.len*(1-row.progress);
+  }
+  if(row.progress>=0.92) complete(row);
+}
+
+function complete(row){
+  if(row.traced) return;
+  row.traced=true;
+  row.progress=1;
+  row.path.style.strokeDashoffset=0;
+  row.node.classList.add('done');
+  row.startEl.classList.add('cheer');
+  burst(row.end);
+  playCorrect();
+  speak(row.name);
+  activeRow=null;
+  done++;
+  if(done===rows.length){
+    setTimeout(()=>{
+      playWin();
+      setTimeout(playWin, 400);   // retry once in case audio was still unlocking
+      win.classList.add('show');
+      setTimeout(()=>{ location.href = 'trace-feed.html'; }, 4000);  // continue to part 2
+    }, 600);
+  }
+}
+
+function burst(pt){
+  const r=board.getBoundingClientRect();
+  const cx=r.left+pt.x, cy=r.top+pt.y;
+  const cols=['#FFD23F','#FF6FB5','#4ECB5B','#3FA9FF','#FF8C24','#9B5DE5'];
+  for(let i=0;i<16;i++){
+    const c=document.createElement('div');
+    c.className='confetti'; c.style.background=cols[i%cols.length];
+    c.style.left=cx+'px'; c.style.top=cy+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2, dist=60+Math.random()*80;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    c.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+60}px) rotate(${Math.random()*360}deg) scale(.3)`,opacity:0}
+    ],{duration:700,easing:'ease-out'}).onfinish=()=>c.remove();
+  }
+}
+
+// re-layout if the board size changes (orientation / resize) and nothing traced yet
+let rt=null;
+window.addEventListener('resize', ()=>{
+  clearTimeout(rt);
+  rt=setTimeout(()=>{ if(done===0 && !activeRow) layout(); }, 200);
+});
+
+start();
+</script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Match the Animal — Animals Game | Learn with Pugu</title>
+<meta name="description" content="Match animal heads to bodies and hear their sounds. Kids learn animals like lion, cow and dog on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/animal-match.html">
+
+<!-- Icons & PWA -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Match the Animal — Animals Game | Learn with Pugu">
+<meta property="og:description" content="Match animal heads to bodies and hear their sounds. Kids learn animals like lion, cow and dog on Learn with Pugu.">
+<meta property="og:url" content="https://learnwithpugu.com/animal-match.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Match the Animal — Animals Game | Learn with Pugu">
+<meta name="twitter:description" content="Match animal heads to bodies and hear their sounds. Kids learn animals like lion, cow and dog on Learn with Pugu.">
+<meta name="twitter:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{ --sky1:#D8F5D0; --sky2:#FFF1C7; }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    display:flex; flex-direction:column; align-items:center;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  h1{ margin:12px 0 2px; font-size:clamp(24px,5.5vw,46px); font-weight:800; color:#fff;
+    letter-spacing:1px; text-shadow:0 4px 0 #4ECB5B, 0 8px 14px rgba(0,0,0,.18); }
+  .menu-btn{ position:fixed; top:14px; left:14px; z-index:1800; text-decoration:none;
+    font-size:26px; background:#fff; width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 0 rgba(0,0,0,.15); }
+  .menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.15); }
+
+  .stage{ flex:1; width:100%; max-width:1200px; display:flex; flex-direction:column;
+    gap:6px; padding:4px 12px 10px; min-height:0; }
+
+  /* outlined animal slots (no box) */
+  .slots{ display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(4px,1vw,14px);
+    flex:0 0 auto; justify-items:center; }
+  .slot{ position:relative; width:100%; max-width:135px;
+    display:flex; flex-direction:column; align-items:center; gap:0; transition:transform .15s; }
+  .animalbox{ position:relative; width:100%; aspect-ratio:1; }
+  .animalbox .emo{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .animalbox .emo img, .animal .emo img{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  .name{ font-size:clamp(12px,2.2vw,20px); font-weight:800; color:#444; text-transform:capitalize;
+    letter-spacing:.5px; margin-top:-2px; }
+  .slot.hot{ transform:scale(1.1); }
+  .slot.done .ghost{ display:none; }
+
+  .tray{ flex:1 1 auto; min-height:0; overflow:hidden;
+    background:transparent; padding:6px;
+    display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(4px,1vw,14px);
+    align-content:center; justify-items:center; }
+  .animal{ width:100%; max-width:135px; aspect-ratio:1;
+    display:flex; align-items:center; justify-content:center;
+    cursor:grab; touch-action:none; transition:transform .12s ease;
+    filter:drop-shadow(0 6px 6px rgba(0,0,0,.22)); }
+  .animal .emo{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .animal:active{ cursor:grabbing; }
+  .animal.lifted{ position:fixed; z-index:999; pointer-events:none; transition:none;
+    filter:drop-shadow(0 14px 14px rgba(0,0,0,.3)); }
+  .animal.placed{ visibility:hidden; }
+
+  .win{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; background:rgba(255,255,255,.85);
+    backdrop-filter:blur(4px); z-index:2000; }
+  .win.show{ display:flex; animation:pop .4s ease; }
+  .win .big{ font-size:clamp(50px,14vw,110px); }
+  .win h2{ font-size:clamp(30px,7vw,60px); color:#4ECB5B; font-weight:800; }
+    .nextnote{ font-size:clamp(15px,3vw,22px); font-weight:800; color:#888; }
+  .again{ font-family:inherit; font-size:26px; font-weight:800; color:#fff;
+    background:#FF8C24; border:none; border-radius:40px; padding:14px 44px;
+    box-shadow:0 6px 0 #e06e00; cursor:pointer; }
+  .again:active{ transform:translateY(4px); box-shadow:0 2px 0 #e06e00; }
+  @keyframes pop{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes wob{ 0%,100%{transform:rotate(0)} 25%{transform:rotate(-7deg)} 75%{transform:rotate(7deg)} }
+  .cheer{ animation:wob .5s ease !important; }
+  .confetti{ position:fixed; width:12px; height:12px; z-index:1500; border-radius:2px; pointer-events:none; }
+</style>
+</head>
+<body>
+  <h1>Match The Animal</h1>
+  <a class="menu-btn" href="index.html">🏠</a>
+  <div class="stage">
+    <div class="slots" id="slots"></div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <div class="win" id="win">
+    <div class="big">🐾🎉🐾</div>
+    <h2>You Did It!</h2>
+    <div class="nextnote">Next game starting…</div>
+    <button class="again" onclick="start()">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+const ANIMALS = [
+  ["elephant","🐘"],
+  ["lion","🦁"],
+  ["cow","🐮"],
+  ["monkey","🐵"],
+  ["sheep","🐑"],
+  ["duck","🦆"],
+  ["dog","🐶"],
+  ["cat","🐱"],
+  ["chicken","🐔"],
+  ["horse","🐴"],
+];
+
+// full-color image; falls back to emoji if missing
+function animalImg(id, emoji){
+  return `<img src="images/${id}.png" alt="${id}"
+    onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${emoji}',style:'font-size:clamp(44px,9.5vw,96px);line-height:1'}))">`;
+}
+// outline image; falls back to faded emoji if missing
+function animalOutlineImg(id, emoji){
+  return `<img src="images/${id}-outline.png" alt="${id} outline"
+    onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${emoji}',style:'font-size:clamp(44px,9.5vw,96px);line-height:1;filter:grayscale(1) opacity(.28)'}))">`;
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+// animal sound files — place sounds/<animal>.mp3 next to this file
+// e.g. sounds/lion.mp3, sounds/cow.mp3 ...
+const animalSounds = {};
+ANIMALS.forEach(([id])=>{ const a=new Audio('sounds/'+id+'.mp3'); a.preload='auto'; animalSounds[id]=a; });
+function playAnimalSound(id){
+  const a=animalSounds[id];
+  if(!a) return;
+  try{ a.currentTime=0; a.play(); }catch(e){}
+}
+/* -------------------------- */
+
+const slots = document.getElementById('slots');
+const tray = document.getElementById('tray');
+const win = document.getElementById('win');
+let matched = 0;
+
+function start(){
+  win.classList.remove('show');
+  slots.innerHTML=''; tray.innerHTML=''; matched=0;
+
+  ANIMALS.forEach(([id,emoji])=>{
+    const s=document.createElement('div');
+    s.className='slot'; s.dataset.id=id; s.dataset.emoji=emoji;
+    s.innerHTML=`<div class="animalbox"><div class="ghost"><div class="emo">${animalOutlineImg(id,emoji)}</div></div></div><div class="name">${id}</div>`;
+    slots.appendChild(s);
+  });
+
+  shuffle([...ANIMALS]).forEach(([id,emoji])=>{
+    const f=document.createElement('div');
+    f.className='animal'; f.dataset.id=id;
+    f.innerHTML=`<div class="emo">${animalImg(id,emoji)}</div>`;
+    attachDrag(f);
+    tray.appendChild(f);
+  });
+}
+
+let active=null, offX=0, offY=0;
+
+function attachDrag(el){
+  el.addEventListener('pointerdown', e=>{
+    if(el.classList.contains('placed')) return;
+    active=el;
+    const r=el.getBoundingClientRect();
+    offX=e.clientX-r.left; offY=e.clientY-r.top;
+    el.classList.add('lifted');
+    el.style.width=r.width+'px'; el.style.height=r.height+'px';
+    move(e.clientX,e.clientY);
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', e=>{ if(active===el) move(e.clientX,e.clientY); });
+  el.addEventListener('pointerup', e=>{ if(active===el) drop(e.clientX,e.clientY); });
+}
+
+function move(x,y){
+  active.style.left=(x-offX)+'px';
+  active.style.top=(y-offY)+'px';
+  highlight(x,y);
+}
+
+function currentSlot(x,y){
+  for(const s of slots.querySelectorAll('.slot')){
+    const r=s.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom) return s;
+  }
+  return null;
+}
+
+function highlight(x,y){
+  slots.querySelectorAll('.slot').forEach(s=>s.classList.remove('hot'));
+  const s=currentSlot(x,y);
+  if(s&&!s.classList.contains('done')&&s.dataset.id===active.dataset.id) s.classList.add('hot');
+}
+
+function drop(x,y){
+  const el=active; active=null;
+  slots.querySelectorAll('.slot').forEach(s=>s.classList.remove('hot'));
+  const s=currentSlot(x,y);
+  el.classList.remove('lifted');
+  el.style.position=''; el.style.left=''; el.style.top='';
+  el.style.width=''; el.style.height=''; el.style.zIndex='';
+  if(s && !s.classList.contains('done') && s.dataset.id===el.dataset.id){
+    s.classList.add('done');
+    const box=s.querySelector('.animalbox');
+    box.innerHTML=`<div class="emo">${animalImg(s.dataset.id, s.dataset.emoji)}</div>`;
+    s.classList.add('cheer');
+    setTimeout(()=>s.classList.remove('cheer'),500);
+    el.classList.add('placed');
+    burst(s);
+    playCorrect();
+    // say the name, then play that animal's sound
+    speak(s.dataset.id);
+    setTimeout(()=>playAnimalSound(s.dataset.id), 700);
+    matched++;
+    if(matched===ANIMALS.length) setTimeout(()=>{ playWin(); win.classList.add('show'); scheduleNextGame(); },600);
+  } else if(s){
+    sayUhOh();
+  }
+}
+
+function burst(node){
+  const r=node.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const cols=['#FFD23F','#FF6FB5','#4ECB5B','#3FA9FF','#FF8C24','#9B5DE5'];
+  for(let i=0;i<14;i++){
+    const c=document.createElement('div');
+    c.className='confetti'; c.style.background=cols[i%cols.length];
+    c.style.left=cx+'px'; c.style.top=cy+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2, dist=60+Math.random()*70;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    c.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+60}px) rotate(${Math.random()*360}deg) scale(.3)`,opacity:0}
+    ],{duration:700,easing:'ease-out'}).onfinish=()=>c.remove();
+  }
+}
+
+start();
+</script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Number Caterpillar — Counting Game | Learn with Pugu</title>
+<meta name="description" content="Help kids learn numbers 1 to 9 by matching them onto a happy caterpillar. A fun counting game on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/number-caterpillar.html">
+
+<!-- Icons & PWA -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Number Caterpillar — Counting Game | Learn with Pugu">
+<meta property="og:description" content="Help kids learn numbers 1 to 9 by matching them onto a happy caterpillar. A fun counting game on Learn with Pugu.">
+<meta property="og:url" content="https://learnwithpugu.com/number-caterpillar.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Number Caterpillar — Counting Game | Learn with Pugu">
+<meta name="twitter:description" content="Help kids learn numbers 1 to 9 by matching them onto a happy caterpillar. A fun counting game on Learn with Pugu.">
+<meta name="twitter:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --c1:#FFD23F; --c2:#9B5DE5; --c3:#FF8C24; --c4:#FF6FB5; --c5:#4ECB5B;
+    --c6:#FF4D4D; --c7:#3FA9FF; --c8:#9AA5B1; --c9:#2B2B2B;
+    --sky1:#D6FFE8; --sky2:#C8ECFF;
+  }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    display:flex; flex-direction:column; align-items:center;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  h1{
+    margin:14px 0 2px; font-size:clamp(26px,6vw,50px); font-weight:800;
+    color:#fff; letter-spacing:1px;
+    text-shadow:0 4px 0 #4ECB5B, 0 8px 14px rgba(0,0,0,.18);
+  }
+  .stage{ flex:1; width:100%; max-width:1150px; display:flex; flex-direction:column;
+    justify-content:space-around; padding:6px 16px 20px; }
+
+  .cat{ display:flex; align-items:center; justify-content:center; flex-wrap:nowrap; gap:0; }
+  .head{ width:clamp(60px,11vw,120px); aspect-ratio:1; flex:0 0 auto;
+    margin-right:clamp(-14px,-2vw,-10px); z-index:20;
+    animation:wave 1.8s ease-in-out infinite; }
+  .head svg{ width:100%; height:100%; display:block; }
+
+  .seg{ position:relative; flex:0 0 auto;
+    width:clamp(58px,10.5vw,118px); aspect-ratio:1;
+    border-radius:50%;
+    margin-left:clamp(-12px,-1.8vw,-9px);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:800; font-size:clamp(22px,5vw,46px);
+    box-shadow:inset 0 -8px 0 rgba(0,0,0,.15), 0 6px 10px rgba(0,0,0,.18);
+    animation:wave 1.8s ease-in-out infinite;
+  }
+  .seg:nth-child(2){ margin-left:0; }
+
+  .seg::before, .seg::after{ content:''; position:absolute; bottom:-9px;
+    width:7px; height:16px; border-radius:0 0 5px 5px;
+    background:#3a7d34; z-index:-1; }
+  .seg::before{ left:32%; transform:rotate(-12deg); }
+  .seg::after{ right:32%; transform:rotate(12deg); }
+  .slot::before, .slot::after{ background:rgba(120,120,120,.45); }
+
+  @keyframes wave{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-12px) } }
+
+  .slot{ background:rgba(255,255,255,.55);
+    box-shadow:inset 0 0 0 7px var(--ring,rgba(255,255,255,.85)), 0 6px 10px rgba(0,0,0,.12);
+    color:rgba(0,0,0,.25); transition:transform .15s; }
+  .slot.hot{ transform:scale(1.14); animation-play-state:paused; }
+  .slot.done{ color:#fff; box-shadow:inset 0 -8px 0 rgba(0,0,0,.15), 0 6px 10px rgba(0,0,0,.18); }
+  .slot.done::before, .slot.done::after{ background:#3a7d34; }
+
+  .tray{ display:grid; grid-template-columns:repeat(9,1fr); gap:clamp(5px,1.2vw,16px);
+    background:rgba(255,255,255,.45); border-radius:30px; padding:16px 10px;
+    box-shadow:inset 0 4px 10px rgba(0,0,0,.06); justify-items:center; }
+  .token{ width:100%; max-width:90px; aspect-ratio:1; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:800; font-size:clamp(22px,5vw,44px);
+    box-shadow:inset 0 -8px 0 rgba(0,0,0,.18), 0 6px 8px rgba(0,0,0,.22);
+    cursor:grab; touch-action:none; transition:transform .12s ease; }
+  .token:active{ cursor:grabbing; }
+  .token.lifted{ position:fixed; z-index:999; pointer-events:none; transition:none;
+    box-shadow:inset 0 -8px 0 rgba(0,0,0,.18), 0 16px 16px rgba(0,0,0,.3); }
+  .token.placed{ visibility:hidden; }
+
+  .win{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; background:rgba(255,255,255,.85);
+    backdrop-filter:blur(4px); z-index:2000; }
+  .win.show{ display:flex; animation:pop .4s ease; }
+  .win .big{ font-size:clamp(50px,14vw,120px); }
+  .win h2{ font-size:clamp(32px,8vw,64px); color:#4ECB5B; font-weight:800; }
+    .nextnote{ font-size:clamp(15px,3vw,22px); font-weight:800; color:#888; }
+  .again{ font-family:inherit; font-size:28px; font-weight:800; color:#fff;
+    background:#FF6FB5; border:none; border-radius:40px; padding:14px 44px;
+    box-shadow:0 6px 0 #e6478f; cursor:pointer; }
+  .again:active{ transform:translateY(4px); box-shadow:0 2px 0 #e6478f; }
+  @keyframes pop{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes wob{ 0%,100%{transform:rotate(0)} 25%{transform:rotate(-8deg)} 75%{transform:rotate(8deg)} }
+  .cheer{ animation:wob .5s ease !important; }
+  .confetti{ position:fixed; width:12px; height:12px; z-index:1500; border-radius:2px; pointer-events:none; }
+  .menu-btn{ position:fixed; top:14px; left:14px; z-index:1800; text-decoration:none;
+    font-size:26px; background:#fff; width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 0 rgba(0,0,0,.15); }
+  .menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.15); }
+</style>
+</head>
+<body>
+  <h1>Number Caterpillar</h1>
+  <a class="menu-btn" href="index.html">🏠</a>
+  <div class="stage">
+    <div class="cat" id="cat"></div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <div class="win" id="win">
+    <div class="big">🐛🎉🐛</div>
+    <h2>You Did It!</h2>
+    <div class="nextnote">Next game starting…</div>
+    <button class="again" onclick="start()">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+const COLORS = ["#FFD23F","#9B5DE5","#FF8C24","#FF6FB5","#4ECB5B","#FF4D4D","#3FA9FF","#9AA5B1","#2B2B2B"];
+const NUMS = [1,2,3,4,5,6,7,8,9];
+
+function headSVG(){
+  return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <line x1="42" y1="22" x2="32" y2="4" stroke="#2B2B2B" stroke-width="5" stroke-linecap="round"/>
+    <line x1="78" y1="22" x2="88" y2="4" stroke="#2B2B2B" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="32" cy="3" r="6" fill="#FF4D4D"/>
+    <circle cx="88" cy="3" r="6" fill="#FF4D4D"/>
+    <circle cx="60" cy="64" r="52" fill="#7ED957"/>
+    <circle cx="60" cy="74" r="52" fill="#5CC23F" opacity="0.25"/>
+    <circle cx="44" cy="56" r="12" fill="#fff"/>
+    <circle cx="76" cy="56" r="12" fill="#fff"/>
+    <circle cx="46" cy="58" r="6" fill="#2B2B2B"/>
+    <circle cx="78" cy="58" r="6" fill="#2B2B2B"/>
+    <circle cx="40" cy="82" r="9" fill="#FF8FB0" opacity="0.7"/>
+    <circle cx="80" cy="82" r="9" fill="#FF8FB0" opacity="0.7"/>
+    <path d="M48 86 Q60 98 72 86" stroke="#2B2B2B" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+const cat = document.getElementById('cat');
+const tray = document.getElementById('tray');
+const win = document.getElementById('win');
+let matched = 0;
+
+function start(){
+  win.classList.remove('show');
+  cat.innerHTML=''; tray.innerHTML=''; matched=0;
+
+  const head=document.createElement('div');
+  head.className='head'; head.innerHTML=headSVG();
+  cat.appendChild(head);
+
+  NUMS.forEach((n,i)=>{
+    const slot=document.createElement('div');
+    slot.className='seg slot';
+    slot.dataset.num=n; slot.dataset.color=COLORS[i];
+    slot.style.zIndex = 19 - i;
+    slot.style.setProperty('--ring', COLORS[i]);
+    slot.style.animationDelay = (i*0.15)+'s';
+    slot.textContent=n;
+    cat.appendChild(slot);
+  });
+
+  shuffle(NUMS.map((n,i)=>({n,c:COLORS[i]}))).forEach(({n,c})=>{
+    const t=document.createElement('div');
+    t.className='token'; t.dataset.num=n;
+    t.style.background=c; t.textContent=n;
+    attachDrag(t);
+    tray.appendChild(t);
+  });
+}
+
+let active=null, offX=0, offY=0;
+
+function attachDrag(el){
+  el.addEventListener('pointerdown', e=>{
+    if(el.classList.contains('placed')) return;
+    active=el;
+    const r=el.getBoundingClientRect();
+    offX=e.clientX-r.left; offY=e.clientY-r.top;
+    el.classList.add('lifted');
+    el.style.width=r.width+'px'; el.style.height=r.height+'px';
+    move(e.clientX,e.clientY);
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', e=>{ if(active===el) move(e.clientX,e.clientY); });
+  el.addEventListener('pointerup', e=>{ if(active===el) drop(e.clientX,e.clientY); });
+}
+
+function move(x,y){
+  active.style.left=(x-offX)+'px';
+  active.style.top=(y-offY)+'px';
+  highlight(x,y);
+}
+
+function currentSlot(x,y){
+  for(const s of cat.querySelectorAll('.slot')){
+    const r=s.getBoundingClientRect();
+    if(x>=r.left-10&&x<=r.right+10&&y>=r.top-10&&y<=r.bottom+10) return s;
+  }
+  return null;
+}
+
+function highlight(x,y){
+  cat.querySelectorAll('.slot').forEach(s=>s.classList.remove('hot'));
+  const s=currentSlot(x,y);
+  if(s&&!s.classList.contains('done')&&s.dataset.num===active.dataset.num) s.classList.add('hot');
+}
+
+function drop(x,y){
+  const el=active; active=null;
+  cat.querySelectorAll('.slot').forEach(s=>s.classList.remove('hot'));
+  const s=currentSlot(x,y);
+  el.classList.remove('lifted');
+  el.style.position=''; el.style.left=''; el.style.top='';
+  el.style.width=''; el.style.height=''; el.style.zIndex='';
+  if(s && !s.classList.contains('done') && s.dataset.num===el.dataset.num){
+    s.classList.add('done');
+    s.style.background=s.dataset.color;
+    s.classList.add('cheer');
+    setTimeout(()=>s.classList.remove('cheer'),500);
+    el.classList.add('placed');
+    el.style.background = COLORS[NUMS.indexOf(+el.dataset.num)];
+    burst(s);
+    playCorrect();
+    speak(s.dataset.num);
+    matched++;
+    if(matched===NUMS.length) setTimeout(()=>{ playWin(); win.classList.add('show'); scheduleNextGame(); },400);
+  } else if(s){
+    sayUhOh();
+  }
+}
+
+function burst(slot){
+  const r=slot.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const cols=['#FFD23F','#FF6FB5','#4ECB5B','#3FA9FF','#FF8C24','#9B5DE5'];
+  for(let i=0;i<14;i++){
+    const c=document.createElement('div');
+    c.className='confetti'; c.style.background=cols[i%cols.length];
+    c.style.left=cx+'px'; c.style.top=cy+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2, dist=60+Math.random()*70;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    c.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+60}px) rotate(${Math.random()*360}deg) scale(.3)`,opacity:0}
+    ],{duration:700,easing:'ease-out'}).onfinish=()=>c.remove();
+  }
+}
+
+start();
+</script>
+</body>
+</html>
