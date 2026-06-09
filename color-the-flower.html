@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Color the Flower — Color by Number Game | Learn with Pugu</title>
+<meta name="description" content="Color the flowers by number! Drag the right colored number onto each flower in this fun color-by-number game on Learn with Pugu.">
+<meta name="theme-color" content="#9B5DE5">
+<link rel="canonical" href="https://learnwithpugu.com/color-the-flower.html">
+
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pugu">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Pugu">
+<meta property="og:title" content="Color the Flower — Color by Number Game | Learn with Pugu">
+<meta property="og:description" content="Color the flowers by number! Drag the right colored number onto each flower in this fun color-by-number game on Learn with Pugu.">
+<meta property="og:url" content="https://learnwithpugu.com/color-the-flower.html">
+<meta property="og:image" content="https://learnwithpugu.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Color the Flower — Color by Number Game | Learn with Pugu">
+<meta name="twitter:description" content="Color the flowers by number! Drag the right colored number onto each flower in this fun color-by-number game on Learn with Pugu.">
+<meta name="twitter:image" content="https://learnwithpugu.com/icon-512.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; overflow:hidden; }
+  body{
+    font-family:'Baloo 2',cursive,sans-serif;
+    background:linear-gradient(160deg,#FFE7F3,#E9F7FF 55%,#EAFBE7);
+    display:flex; flex-direction:column; align-items:center;
+    user-select:none; touch-action:none; position:fixed; inset:0;
+  }
+  .top{ width:100%; display:flex; align-items:center; justify-content:space-between;
+    padding:8px 14px; z-index:30; }
+  .back{ text-decoration:none; font-size:30px; width:46px; height:46px; border-radius:50%;
+    background:#fff; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 0 rgba(0,0,0,.12); color:#9B5DE5; }
+  .title{ font-weight:800; font-size:clamp(20px,5vw,68px); color:#7B3FB0; text-shadow:0 2px 0 #fff; }
+  .top .spacer{ width:46px; }
+
+  .stage{ position:relative; flex:1; width:100%; max-width:760px;
+    display:flex; flex-direction:column; min-height:0; }
+
+  /* garden of flowers */
+  .garden{ flex:1; min-height:0; overflow:auto; scrollbar-width:none;
+    display:flex; flex-wrap:wrap; align-content:flex-start; justify-content:center;
+    gap:6px 4px; padding:4px 8px 8px; }
+  .garden::-webkit-scrollbar{ display:none; }
+
+  .flower{ width:30%; max-width:190px; min-width:130px; aspect-ratio:120/165;
+    position:relative; }
+  .flower svg{ width:100%; height:100%; overflow:visible; }
+
+  /* each circle (petal/center) is a drop target */
+  .cell{ cursor:default; }
+  .cell .disc{ fill:#fff; stroke:#222; stroke-width:3; transition:fill .25s; }
+  .cell.hot .disc{ stroke:#FFB400; stroke-width:5; }
+  .cell.done .disc{ stroke:#fff; }
+  .cell .num{ font-weight:800; font-size:20px; fill:#333; text-anchor:middle;
+    dominant-baseline:central; pointer-events:none; }
+  .cell.done .num{ fill:#fff; }
+
+  /* draggable color-number chips */
+  .tray{ width:100%; z-index:20; flex:0 0 auto;
+    display:flex; gap:14px; overflow-x:auto; overflow-y:hidden;
+    justify-content:safe center; padding:10px 18px 18px; scrollbar-width:none;
+    background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.6)); }
+  .tray::-webkit-scrollbar{ display:none; }
+  .chip{ flex:0 0 auto; width:84px; height:84px; border-radius:50%; color:#fff;
+    font-weight:800; font-size:44px; display:flex; align-items:center; justify-content:center;
+    border:5px dashed rgba(255,255,255,.9);
+    box-shadow:0 6px 0 rgba(0,0,0,.18),0 9px 16px rgba(0,0,0,.18);
+    touch-action:none; cursor:grab; transition:transform .12s; }
+  .chip:active{ transform:scale(.92); }
+
+  .drag{ position:fixed; z-index:999; width:84px; height:84px; border-radius:50%;
+    pointer-events:none; color:#fff; font-weight:800; font-size:44px;
+    display:flex; align-items:center; justify-content:center;
+    border:5px solid rgba(255,255,255,.9); box-shadow:0 8px 20px rgba(0,0,0,.3); }
+
+  .win{ position:fixed; inset:0; z-index:1000; display:none;
+    flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    background:rgba(0,0,0,.45); backdrop-filter:blur(3px); }
+  .win.show{ display:flex; }
+  .win h2{ color:#fff; font-size:clamp(34px,9vw,64px); text-shadow:0 5px 0 #FF6FB5; }
+  .win .again{ background:#7ED957; color:#fff; font-weight:800; font-size:24px;
+    border:none; padding:14px 34px; border-radius:30px; box-shadow:0 6px 0 #4CAF50; }
+  .conf{ position:fixed; top:-20px; width:14px; height:14px; z-index:1001; border-radius:3px; }
+
+  /* ---------- floating background petals ---------- */
+  .bg{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+  .petal{ position:absolute; bottom:-40px; width:22px; height:22px; opacity:.55;
+    border-radius:80% 0 80% 0; transform:rotate(45deg);
+    animation:rise linear infinite; }
+  @keyframes rise{
+    0%{ transform:translateY(0) rotate(0deg) scale(1); opacity:0; }
+    8%{ opacity:.6; }
+    50%{ transform:translateY(-55vh) translateX(28px) rotate(220deg) scale(1.05); }
+    92%{ opacity:.55; }
+    100%{ transform:translateY(-115vh) translateX(-18px) rotate(440deg) scale(.9); opacity:0; }
+  }
+  .stage{ z-index:1; }   /* keep game above the petals */
+</style>
+</head>
+<body>
+  <div class="bg" id="bg" aria-hidden="true"></div>
+  <div class="top">
+    <a class="back" href="index.html">&lsaquo;</a>
+    <div class="title">Colors of Flower 🌸</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="stage">
+    <div class="garden" id="garden"></div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <div class="win" id="win">
+    <h2>Yay! &#127881;</h2>
+    <button class="again" id="again">Play Again</button>
+  </div>
+
+<script src="common.js"></script>
+<script>
+window.playCorrect = window.playCorrect || function(){};
+window.sayUhOh     = window.sayUhOh     || function(){};
+window.playWin     = window.playWin     || function(){};
+window.speak       = function(){};   /* spoken names off on this page */
+
+/* number -> color, matching the reference sheet */
+const COLORS = [
+  { n:1, name:'Blue',   col:'#2E92E8' },
+  { n:2, name:'Orange', col:'#FF8C24' },
+  { n:3, name:'Green',  col:'#3CB54A' },
+  { n:4, name:'Red',    col:'#E8433B' },
+  { n:5, name:'Pink',   col:'#FF5BA3' },
+];
+
+/* the 5 flowers: petal number + center number (exactly like the picture) */
+const FLOWERS = [
+  { petals:3, center:2 },
+  { petals:5, center:1 },
+  { petals:4, center:4 },
+  { petals:1, center:1 },
+  { petals:2, center:3 },
+];
+
+function colInfo(n){ return COLORS.find(c=>c.n===n); }
+
+/* petal centers around a flower (viewBox 120x150), bigger + spaced out */
+const PETALS = [
+  {x:60,y:24},{x:24,y:48},{x:96,y:48},{x:36,y:90},{x:84,y:90}
+];
+const CENTER = {x:60,y:57};
+const PR = 19;   /* petal/center radius */
+
+const garden   = document.getElementById('garden');
+const tray      = document.getElementById('tray');
+const winEl    = document.getElementById('win');
+
+let dragEl=null, dragN=null, srcChip=null, doneCells=0, totalCells=0, _nextTimer=null;
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function flowerSVG(f){
+  // petals carry f.petals, center carries f.center
+  let cells='';
+  PETALS.forEach(p=>{
+    cells+='<g class="cell" data-n="'+f.petals+'">'
+        +  '<circle class="disc" cx="'+p.x+'" cy="'+p.y+'" r="'+PR+'"/>'
+        +  '<text class="num" x="'+p.x+'" y="'+p.y+'">'+f.petals+'</text>'
+        +  '</g>';
+  });
+  cells+='<g class="cell" data-n="'+f.center+'">'
+      +  '<circle class="disc" cx="'+CENTER.x+'" cy="'+CENTER.y+'" r="'+PR+'"/>'
+      +  '<text class="num" x="'+CENTER.x+'" y="'+CENTER.y+'">'+f.center+'</text>'
+      +  '</g>';
+  return '<svg viewBox="0 0 120 165" xmlns="http://www.w3.org/2000/svg">'
+       + '<path d="M60 76 L60 128" stroke="#3CB54A" stroke-width="5" fill="none"/>'
+       + '<path d="M60 100 Q40 92 32 104 Q50 112 60 100 Z" fill="#7ED957"/>'
+       + '<path d="M60 110 Q80 102 88 114 Q70 122 60 110 Z" fill="#7ED957"/>'
+       + '<rect x="40" y="126" width="40" height="10" rx="3" fill="#E2945A"/>'
+       + '<path d="M43 137 L77 137 L72 162 L48 162 Z" fill="#C98A4B"/>'
+       + '<path d="M43 137 L77 137 L75.5 145 L44.5 145 Z" fill="#B97B3C"/>'
+       + cells + '</svg>';
+}
+
+function start(){
+  if(_nextTimer){ clearTimeout(_nextTimer); _nextTimer=null; }
+  winEl.classList.remove('show');
+  garden.innerHTML=''; tray.innerHTML='';
+  doneCells=0; totalCells=FLOWERS.length*(PETALS.length+1);
+
+  // one flower per layout in the picture
+  FLOWERS.forEach(f=>{
+    const el=document.createElement('div'); el.className='flower';
+    el.innerHTML=flowerSVG(f);
+    garden.appendChild(el);
+  });
+
+  // draggable chips (shuffled), one per color — reusable, never used up
+  shuffle([...COLORS]).forEach(c=>{
+    const chip=document.createElement('div'); chip.className='chip';
+    chip.textContent=c.n; chip.style.background=c.col; chip.dataset.n=c.n; chip.dataset.col=c.col;
+    chip.addEventListener('pointerdown',e=>startDrag(e,c,chip));
+    tray.appendChild(chip);
+  });
+}
+
+function startDrag(e,c,chip){
+  e.preventDefault();
+  srcChip=chip; dragN=c.n;
+  dragEl=document.createElement('div'); dragEl.className='drag';
+  dragEl.textContent=c.n; dragEl.style.background=c.col;
+  document.body.appendChild(dragEl);
+  moveDrag(e);
+  window.addEventListener('pointermove',moveDrag);
+  window.addEventListener('pointerup',endDrag);
+}
+
+function moveDrag(e){
+  if(!dragEl) return;
+  dragEl.style.left=(e.clientX-42)+'px';
+  dragEl.style.top =(e.clientY-42)+'px';
+  const hit=cellUnder(e.clientX,e.clientY);
+  document.querySelectorAll('.cell.hot').forEach(g=>g.classList.remove('hot'));
+  if(hit && !hit.classList.contains('done')) hit.classList.add('hot');
+}
+
+function cellUnder(x,y){
+  const el=document.elementFromPoint(x,y);
+  return el ? el.closest('.cell') : null;
+}
+
+function endDrag(e){
+  window.removeEventListener('pointermove',moveDrag);
+  window.removeEventListener('pointerup',endDrag);
+  const hit=cellUnder(e.clientX,e.clientY);
+  document.querySelectorAll('.cell.hot').forEach(g=>g.classList.remove('hot'));
+  if(dragEl){ dragEl.remove(); dragEl=null; }
+
+  if(hit && !hit.classList.contains('done') && +hit.dataset.n===dragN){
+    hit.classList.add('done');
+    hit.querySelector('.disc').style.fill=srcChip.dataset.col;
+    playCorrect();
+    doneCells++;
+    if(doneCells===totalCells) winGame();
+  }else if(hit && !hit.classList.contains('done')){
+    sayUhOh();
+  }
+  srcChip=null; dragN=null;
+}
+
+function winGame(){
+  winEl.classList.add('show');
+  playWin(); setTimeout(playWin,400);
+  confetti();
+  if(typeof scheduleNextGame==='function'){
+    _nextTimer=setTimeout(()=>{ if(typeof nextGameUrl==='function') location.href=nextGameUrl(); }, 5000);
+  }
+}
+
+function confetti(){
+  const colors=['#FF6FB5','#FFD23F','#7ED957','#6FC5FF','#C18CFF'];
+  for(let i=0;i<40;i++){
+    const c=document.createElement('div'); c.className='conf';
+    c.style.left=Math.random()*100+'%';
+    c.style.background=colors[(Math.random()*colors.length)|0];
+    document.body.appendChild(c);
+    const dx=(Math.random()*2-1)*200, dur=1200+Math.random()*1200;
+    c.animate([{transform:'translate(0,0) rotate(0)',opacity:1},
+               {transform:'translate('+dx+'px,'+(innerHeight+60)+'px) rotate('+(Math.random()*720)+'deg)',opacity:1}],
+              {duration:dur,easing:'cubic-bezier(.2,.6,.4,1)'}).onfinish=()=>c.remove();
+  }
+}
+
+document.getElementById('again').addEventListener('click',start);
+start();
+
+/* ---------- floating background petals ---------- */
+(function(){
+  const bg=document.getElementById('bg');
+  const tints=['#FFB4DC','#FFC9E3','#C7E9FF','#FFE3A8','#D7F5C9','#E7D2FF'];
+  const N=14;
+  for(let i=0;i<N;i++){
+    const p=document.createElement('div'); p.className='petal';
+    const size=14+Math.random()*16;
+    p.style.width=p.style.height=size+'px';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=tints[(Math.random()*tints.length)|0];
+    p.style.animationDuration=(9+Math.random()*9)+'s';
+    p.style.animationDelay=(-Math.random()*12)+'s';
+    bg.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
